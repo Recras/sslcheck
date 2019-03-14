@@ -2,6 +2,15 @@ from datetime import datetime
 import requests
 import click
 import sys
+import time
+
+def getResult(host, cache):
+    fromCache = 'on' if cache else 'off'
+    r = requests.get('https://api.ssllabs.com/api/v3/analyze?host=' + host + '&fromCache=' + fromCache + '&all=done')
+    return r.json()
+
+def resultDone(result):
+    return result['status'] == 'READY' or result['status'] == 'ERROR'
 
 @click.command()
 @click.option('--mingrade', default='A', help='Minimum grade', show_default=True)
@@ -13,11 +22,12 @@ def testSSL(mingrade, mindaysremaining, cache, hosts):
     minGradeIndex = grades.index(mingrade)
     now = datetime.utcnow()
     hasError = False
-    fromCache = 'on' if cache else 'off'
 
     for host in hosts:
-        r = requests.get('https://api.ssllabs.com/api/v3/analyze?host=' + host + '&fromCache=' + fromCache + '&all=on')
-        result = r.json()
+        result = getResult(host, cache)
+        while not resultDone(result):
+            time.sleep(30)
+            result = getResult(host, cache)
 
         expires = datetime.utcfromtimestamp(min(map(lambda cert: cert['notAfter'],result['certs'])) / 1000)
         daysRemaining = (expires - now).days
