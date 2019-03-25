@@ -7,9 +7,12 @@ import time
 def getResult(host, cache):
     fromCache = 'on' if cache else 'off'
     r = requests.get('https://api.ssllabs.com/api/v3/analyze?host=' + host + '&fromCache=' + fromCache + '&all=done')
+    r.raise_for_status()
     return r.json()
 
 def resultDone(result):
+    if 'status' not in result:
+        return False
     return result['status'] == 'READY' or result['status'] == 'ERROR'
 
 @click.command()
