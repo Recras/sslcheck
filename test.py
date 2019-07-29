@@ -38,7 +38,7 @@ def analyseResult(result, mingrade, mindaysremaining):
         return False
 
     isOk = True
-    expires = datetime.utcfromtimestamp(min(map(lambda cert: cert['notAfter'],result['certs'])) / 1000)
+    expires = datetime.utcfromtimestamp(result['certs'][0]['notAfter'] / 1000)
     daysRemaining = (expires - now).days
     if daysRemaining < mindaysremaining:
         isOk = False
