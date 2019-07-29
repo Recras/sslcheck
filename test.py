@@ -4,21 +4,22 @@ import click
 import sys
 import time
 
-def getResult(host, cache, maxTries = 10):
+def getResult(host, cache, startNew, maxTries = 10):
     if(maxTries < 1):
         return None
 
     fromCache = 'on' if cache else 'off'
-    r = requests.get('https://api.ssllabs.com/api/v3/analyze?host=' + host + '&fromCache=' + fromCache + '&all=done')
+    startNew = 'on' if startNew and not cache else 'off'
+    r = requests.get('https://api.ssllabs.com/api/v3/analyze?host=' + host + '&fromCache=' + fromCache + '&all=done&startNew=' + startNew)
     if r.status_code in [529, 503]:
         # Service unavailable or overloaded, sleep!
         time.sleep(60 * 10)
-        return getResult(host, cache, maxTries - 1)
+        return getResult(host, cache, False, maxTries - 1)
 
     result = r.json()
     if not resultDone(result):
         time.sleep(30)
-        return getResult(host, cache, maxTries - 1)
+        return getResult(host, cache, False, maxTries - 1)
     return result
 
 def resultDone(result):
@@ -60,7 +61,7 @@ def analyseResult(result, mingrade, mindaysremaining):
 def testSSL(mingrade, mindaysremaining, cache, hosts):
     hasError = False
     for host in hosts:
-        result = getResult(host, cache)
+        result = getResult(host, cache, True)
         if not analyseResult(result, mingrade, mindaysremaining):
             hasError = True
 
