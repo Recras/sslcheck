@@ -46,8 +46,10 @@ def analyseResult(result, mingrade, mindaysremaining):
 
     print(result['host'] + ', expires in ' + str(daysRemaining) + ' days')
     for endpoint in result['endpoints']:
-        grade = endpoint['grade']
-        if grades.index(grade) > minGradeIndex:
+        grade = endpoint['grade'] if 'grade' in endpoint else None
+        if grade is None:
+            print('ERROR: Endpoint has no "grade" field: ' + endpoint)
+        if grade is None or grades.index(grade) > minGradeIndex:
             isOk = False
         print(' - ' + endpoint['serverName'] + ' (' + endpoint['ipAddress'] + ') => ' + grade)
     print()
