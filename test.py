@@ -33,11 +33,6 @@ def analyseResult(result, mingrade, mindaysremaining):
     minGradeIndex = grades.index(mingrade)
     now = datetime.utcnow()
 
-    if not result:
-        print(host + ', failed after max tries')
-        print()
-        return False
-
     isOk = True
     expires = datetime.utcfromtimestamp(result['certs'][0]['notAfter'] / 1000)
     daysRemaining = (expires - now).days
@@ -65,7 +60,10 @@ def testSSL(mingrade, mindaysremaining, cache, hosts):
     hasError = False
     for host in hosts:
         result = getResult(host, cache, True)
-        if not analyseResult(result, mingrade, mindaysremaining):
+        if not result or not analyseResult(result, mingrade, mindaysremaining):
+            if not result:
+                print(host + ', failed after max tries')
+                print()
             hasError = True
 
     print('Contains errors' if hasError else 'Everything ok')
