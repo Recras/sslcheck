@@ -47,7 +47,8 @@ def analyseResult(result, mingrade, mindaysremaining):
             print(endpoint)
         if grade is None or grades.index(grade) > minGradeIndex:
             isOk = False
-        print(' - ' + endpoint['serverName'] + ' (' + endpoint['ipAddress'] + ') => ' + grade)
+        serverName = endpoint['serverName'] if 'serverName' in endpoint else ''
+        print(' - ' + serverName + ' (' + endpoint['ipAddress'] + ') => ' + grade)
     print()
     return isOk
 
